@@ -14,6 +14,17 @@ function App() {
   
   const [showslidecontrols, setShowSlideControls] = useState(true);
   const [valid_minister_info, setValidMinisterInfo] = useState('');
+
+  const [ministerdb, setMinisterDB] = useState([{
+    name: 'Pastor Mrs. Grace Lasisi',
+    info: 'Senior Pastor Springs of Hope Christian Ministries',
+  }]);
+
+  const [new_minister, setNewMinister] = useState({
+    name: '',
+    info: '',
+  });
+
   
   const getDynamicValue = async (dynamic_value: string) => {
     const res = await fetch('/fs-api/', {
@@ -34,6 +45,8 @@ function App() {
     getDynamicValue('current_minister_info');
     getDynamicValue('current_minister_name');
     getCurrentSlideInfo();
+
+    refreshMinisterInfo();
   }
     , []);
 
@@ -71,6 +84,18 @@ function App() {
     return
   }
 
+  const refreshMinisterInfo = async () => {
+    const res = await fetch('/api/get_ministers', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      // body: JSON.stringify({ action: 'get_minister', value: 'current_minister_info' }),
+    });
+    const data = await res.json();
+    console.log('Minister Info');
+    console.log(data);
+    setMinisterDB(data);
+  }
+
   const handleMinisterUpdate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -104,6 +129,35 @@ function App() {
 
   };
 
+  const addNewMinister = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    console.log('Minister Update');
+    console.log(new_minister);
+
+    const res = fetch('/api/add_minister', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...new_minister })
+      // body: JSON.stringify({ action: 'change_variable', ...ministerformFields_ })
+    });
+
+    res.then((response) => {
+      if (response.ok) {
+        console.log('Minister updated successfully');
+      } else {
+        console.error('Error updating minister');
+      }
+    }
+    ).catch((error) => {
+      console.error('Error:', error);
+    })
+
+
+    refreshMinisterInfo();
+  };
+
+
   return (
     <div style={{ padding: '2rem' }}>
       <h1 className='text-3xl'>Service Manager</h1>
@@ -113,6 +167,7 @@ function App() {
         <span className='mr-2'><span className='text-gray-400'>Next Event: </span><span className='font-bold'>{'Praise and Worship'}</span></span>
       </p>
       <div className='grid md:grid-cols-1 lg:grid-cols-2 gap-4'>
+        <div>
         <form onSubmit={handleMinisterUpdate}>
           <div className='flex flex-col justify-start'>
             <label className='mt-4 mb-2 text-sm'>Current Minister Info</label>
@@ -153,6 +208,43 @@ function App() {
             <div className='flex items-center rounded bg-gray-700 text-gray-400 p-1'>{valid_minister_info}</div>
           </div>
         </form>
+
+        <form onSubmit={addNewMinister}>
+          <div className='flex flex-col justify-start mt-2'>
+            <label className='mt-4 mb-2 text-sm'>Add New Minister</label>
+            <div className='mb-4 flex'>
+              {/* input field to add new minister info */}
+              <input
+                type="text"
+                name="add_minister_info"
+                value={new_minister.info}
+                className='border-2 border-gray-300 rounded p-1 mr-2 text-sm w-3xl'
+                onChange={(e) => setNewMinister((prevNewMinister) => ({
+                  ...prevNewMinister,
+                  info: e.target.value,
+                }))}
+                placeholder="Minister Info"
+              />
+              {/* input field to add new minister name */}
+              <input
+                type="text"
+                name="add_minister_name"
+
+                value={new_minister.name}
+                className='border-2 border-gray-300 rounded p-1 mr-2 text-sm w-3xl'
+                onChange={(e) => setNewMinister((prevNewMinister) => ({
+                    ...prevNewMinister,
+                    name: e.target.value,
+                }))}
+                placeholder="Minister Name"
+
+              />
+              <button type="submit" className='bg-gray-700 rounded text-white px-4 py-1 hover:bg-blue-700 cursor-pointer'>Add</button>
+            </div>
+            <div className='flex items-center rounded bg-gray-700 text-gray-400 p-1'>{JSON.stringify(ministerdb)}</div>
+          </div>
+        </form>
+        </div>
 
         <div className='flex flex-col justify-start row-span-2'>
           <div className="flex flex-row justify-between items-baseline mb-1">
