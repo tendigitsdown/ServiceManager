@@ -15,7 +15,11 @@ export default defineConfig({
         ws: true,
       },
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/fs-api/, ''),
+        secure: false,
+        ws: true,
       }
     }
   },

@@ -1,0 +1,12 @@
+[
+    { "id": 1, "name": "Minister A", "info": "Info about Minister A" },
+    { "id": 2, "name": "Minister B", "info": "Info about Minister B" },
+    { "id": 3, "name": "Minister C", "info": "Info about Minister C" },
+    { "id": 4, "name": "Minister D", "info": "Info about Minister D" },
+    { "id": 5, "name": "Minister E", "info": "Info about Minister E" },
+    { "id": 6, "name": "Minister F", "info": "Info about Minister F" },
+    { "id": 7, "name": "Minister G", "info": "Info about Minister G" },
+    { "id": 8, "name": "Minister H", "info": "Info about Minister H" },
+    { "id": 9, "name": "Minister I", "info": "Info about Minister I" },
+    { "id": 10, "name": "Minister J", "info": "Info about Minister J" }
+]
