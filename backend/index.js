@@ -13,12 +13,14 @@ app.use(cors());
 app.use(express.json());
 
 const LOCAL_MINISTER_JSON_PATH = './data/db/ministers.json'; // Path to your local JSON file
-const ministersDB = require(LOCAL_MINISTER_JSON_PATH); // Replace with the actual path to your JSON file
-
-if (!ministersDB || ministersDB.length === 0) {
-  console.log('Ministers data not found, creating a new one...');
+try {
+  fs.accessSync(LOCAL_MINISTER_JSON_PATH, fs.constants.R_OK);
+}
+catch (err) {
+  console.error(`Error: local json file is not accessible. Attempting to create one at ${LOCAL_MINISTER_JSON_PATH}.`);
   fs.writeFileSync(LOCAL_MINISTER_JSON_PATH, JSON.stringify([], null, 2), 'utf-8');
 }
+const ministersDB = require(LOCAL_MINISTER_JSON_PATH); // Replace with the actual path to your JSON file
 
 
 function deleteMinisterById(id) {
