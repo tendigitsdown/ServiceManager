@@ -139,7 +139,6 @@ function App() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...new_minister })
-      // body: JSON.stringify({ action: 'change_variable', ...ministerformFields_ })
     });
 
     res.then((response) => {

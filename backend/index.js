@@ -29,7 +29,8 @@ function deleteMinisterById(id) {
 } 
 
 function generateUniqueId() {
-  const id = Math.random().toString(36).substr(2, 9); // Generate a random unique ID
+  // Generate a random 4 digit ID
+  const id = Math.floor(Math.random() * 10000); // Random number between 0 and 9999
   const existingMinister = ministersDB.find(minister => minister.id === id);
   if (existingMinister) {
     return generateUniqueId(); // If ID already exists, generate a new one
