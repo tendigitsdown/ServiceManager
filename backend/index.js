@@ -37,7 +37,7 @@ function deleteMinisterById(id) {
 
 function generateUniqueId() {
   // Generate a incremental 4 digit ID and pad it with leading zeros
-  // const id = String(ministersDB.length + 1).padStart(4, '0');
+  const id = String(ministersDB.length + 1).padStart(4, '0');
   const existingMinister = ministersDB.find(minister => minister.id === id);
   if (existingMinister) {
     return generateUniqueId(); // If ID already exists, generate a new one
