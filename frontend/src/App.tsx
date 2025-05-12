@@ -7,18 +7,23 @@ interface MinisterFormFields {
 
 function App() {
   const [ministerformFields, setMinisterFormFields] = useState<MinisterFormFields>({
-    info: 'Senior Pastor Springs of Hope Christian Ministries',
-    name: 'Pastor Mrs. Grace Lasisi',
-  });
-  const [currentOutput, setCurrentOutput] = useState('');
+      info: 'Senior Pastor Springs of Hope Christian Ministries',
+      name: 'Pastor Mrs. Grace Lasisi',
+    });
+    useEffect(() => {
+        console.log('Updated ministerformFields:', ministerformFields);
+    }, [ministerformFields]);
+    
   
-  const [showslidecontrols, setShowSlideControls] = useState(true);
-  const [valid_minister_info, setValidMinisterInfo] = useState('');
-
-  const [ministerdb, setMinisterDB] = useState([{
-    name: 'Pastor Mrs. Grace Lasisi',
-    info: 'Senior Pastor Springs of Hope Christian Ministries',
-  }]);
+    const [currentOutput, setCurrentOutput] = useState('');
+    
+    const [showslidecontrols, setShowSlideControls] = useState(true);
+    const [valid_minister_info, setValidMinisterInfo] = useState('');
+    
+    const [ministerdb, setMinisterDB] = useState([{
+      name: 'Pastor Mrs. Grace Lasisi',
+      info: 'Senior Pastor Springs of Hope Christian Ministries',
+    }]);
 
   const [new_minister, setNewMinister] = useState({
     name: '',
@@ -60,7 +65,6 @@ function App() {
       body: JSON.stringify({ action: 'get_output_slide_text' }),
     })
 
-
     const data = await resp_slide_text.json();
     console.log('Current Slide Info');
     console.log(data.data);
@@ -96,34 +100,65 @@ function App() {
     setMinisterDB(data);
   }
 
-  const handleMinisterUpdate = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const callApiVariableUpdate = (data: any[] | undefined) => {
 
+    // Loop through the data entries and run the api call using the data
+    data?.forEach((each_variable_update) => {
+      console.log(each_variable_update);
+      const res = fetch('/fs-api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'change_variable', ...each_variable_update })
+      });
+
+      res.then((response) => {
+        if (response.ok) {
+          console.log('Minister updated successfully');
+        } else {
+          console.error('Error updating minister');
+        }
+      }
+      ).catch((error) => {
+        console.error('Error:', error);
+      })
+    });
+
+  };
+
+  // Function can take a form event or a button event
+  const handleMinisterUpdate = (e?: React.FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
+
+    // When no event is passed, it means the function is called from the clear button
+    // and we need to set the ministerformFields to the default values
+
+    if (e?.target === undefined) {
+      console.log('Resetting minister form fields');
+      setMinisterFormFields({ name: '', info: '' });
+    }else {
+      console.log('Updating minister form fields with form input.');
+    }
+    
     console.log('Minister Update');
     console.log(ministerformFields);
 
-    const ministerformFields_ = {
-      name: 'current_minister_info',
-      value: 'Grace',
-    };
 
-    const res = fetch('/fs-api', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'change_variable', data: ministerformFields_ })
-      // body: JSON.stringify({ action: 'change_variable', ...ministerformFields_ })
+    const api_data: { name: string; key: string; value: string }[] = [];
+    api_data.push({
+      name: 'current_minister_info',
+      key: 'value',
+      value: ministerformFields.info
     });
 
-    res.then((response) => {
-      if (response.ok) {
-        console.log('Minister updated successfully');
-      } else {
-        console.error('Error updating minister');
-      }
-    }
-    ).catch((error) => {
-      console.error('Error:', error);
-    })
+    // Loop through the data entries and run the api call using the data
+    api_data.push({
+      name: 'current_minister_name',
+      key: 'value',
+      value: ministerformFields.name
+    });
+
+    // Loop through the data entries and run the api call using the data
+    callApiVariableUpdate(api_data)
 
     setValidMinisterInfo('...');
 
@@ -176,14 +211,10 @@ function App() {
                 value={ministerformFields.info}
                 name="current_minister_info"
                 className='border-2 border-gray-300 rounded p-1 mr-2 text-sm w-3xl'
-                onChange={(e) => setMinisterFormFields((_miniter_form: MinisterFormFields) => {
-                  _miniter_form['info'] = e.target.value,
-                    _miniter_form['name'] = ministerformFields.name;
-                  console.log('Minister Info');
-                  console.log(_miniter_form);
-
-                  return _miniter_form;
-                })}
+                onChange={(e) => setMinisterFormFields((prevNewMinister) => ({
+                  ...prevNewMinister,
+                  info: e.target.value,
+                }))}
                 placeholder="Minister Info"
               />
               <input
@@ -191,18 +222,14 @@ function App() {
                 name="current_minister_name"
                 value={ministerformFields.name}
                 className='border-2 border-gray-300 rounded p-1 mr-2 text-sm w-3xl'
-                onChange={(e) => setMinisterFormFields((_miniter_form: MinisterFormFields) => {
-                  _miniter_form['info'] = ministerformFields.info,
-                    _miniter_form['name'] = e.target.value;
-                  console.log('Minister Info');
-                  console.log(_miniter_form);
-
-                  return _miniter_form;
-                })}
+                onChange={(e) => setMinisterFormFields((prevNewMinister) => ({
+                  ...prevNewMinister,
+                  name: e.target.value,
+                }))}
                 placeholder="Minister Name"
               />
-              <button type="submit" className='bg-gray-500 rounded text-white px-4 py-1 mr-2 hover:bg-blue-700 cursor-pointer'>Submit</button>
-              <button type="submit" className='bg-red-400 rounded text-white px-4 py-1 hover:bg-blue-700 cursor-pointer'>Clear</button>
+              <button type="submit" name='submit' className='bg-gray-500 rounded text-white px-4 py-1 mr-2 hover:bg-blue-700 cursor-pointer'>Submit</button>
+              <button type="button" name='clear' className='bg-red-400 rounded text-white px-4 py-1 hover:bg-blue-700 cursor-pointer' onClick={() => handleMinisterUpdate()}>Clear</button>
             </div>
             <div className='flex items-center rounded bg-gray-700 text-gray-400 p-1'>{valid_minister_info}</div>
           </div>
