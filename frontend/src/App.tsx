@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from 'react';
+import {useEffect, useState } from 'react';
 
 interface MinisterFormFields {
   name: string;
@@ -10,6 +10,7 @@ function App() {
       info: 'Senior Pastor Springs of Hope Christian Ministries',
       name: 'Pastor Mrs. Grace Lasisi',
     });
+    
     useEffect(() => {
         console.log('Updated ministerformFields:', ministerformFields);
     }, [ministerformFields]);
