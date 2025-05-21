@@ -271,7 +271,6 @@ function App() {
       </p>
       <div className='grid md:grid-cols-1 lg:grid-cols-2 gap-4'>
         <div>
-        <div>
         {/* Autocomplete Search Input */}
         <div ref={searchContainerRef} style={{ position: 'relative', marginBottom: '1rem' }}>
           <label className='mt-4 mb-2 text-sm block'>Search Minister</label>
