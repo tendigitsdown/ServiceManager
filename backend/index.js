@@ -12,15 +12,34 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
-const LOCAL_MINISTER_JSON_PATH = './data/db/ministers.json'; // Path to your local JSON file
+// Path to your local JSON file
+const LOCAL_MINISTER_JSON_PATH = path.resolve(__dirname, 'data', 'db', 'ministers.json');
 try {
+  // Ensure the directory exists
+  fs.mkdirSync(path.dirname(LOCAL_MINISTER_JSON_PATH), { recursive: true });
   fs.accessSync(LOCAL_MINISTER_JSON_PATH, fs.constants.R_OK);
 }
 catch (err) {
-  console.error(`Error: local json file is not accessible. Attempting to create one at ${LOCAL_MINISTER_JSON_PATH}.`);
-  fs.writeFileSync(LOCAL_MINISTER_JSON_PATH, JSON.stringify([], null, 2), 'utf-8');
+  // If the file doesn't exist or isn't accessible, try to create it
+  console.error(`Error: local json file is not accessible or does not exist. Attempting to create one at ${LOCAL_MINISTER_JSON_PATH}.`);
+  try {
+    fs.writeFileSync(LOCAL_MINISTER_JSON_PATH, JSON.stringify([], null, 2), 'utf-8');
+    console.log(`Successfully created ${LOCAL_MINISTER_JSON_PATH}`);
+  } catch (writeErr) {
+    console.error(`Fatal error: Could not create ministers.json at ${LOCAL_MINISTER_JSON_PATH}`, writeErr);
+    // If we can't create the DB file, the application can't run correctly.
+    // Consider exiting or implementing a fallback. For now, we'll let it try to require and fail.
+  }
 }
-const ministersDB = require(LOCAL_MINISTER_JSON_PATH); // Replace with the actual path to your JSON file
+
+let ministersDB = [];
+try {
+  const jsonData = fs.readFileSync(LOCAL_MINISTER_JSON_PATH, 'utf-8');
+  ministersDB = JSON.parse(jsonData);
+} catch (err) {
+  console.error(`Error reading or parsing ${LOCAL_MINISTER_JSON_PATH}. Initializing with empty array.`, err);
+  // If file can't be read (e.g. after a failed write attempt), start with an empty DB.
+}
 
 
 function deleteMinisterById(id) {
@@ -47,7 +66,12 @@ function generateUniqueId() {
 
 
 function updateLocalMinisterJsonFile() {
-  fs.writeFileSync(LOCAL_MINISTER_JSON_PATH, JSON.stringify(ministersDB, null, 2), 'utf-8');
+  try {
+    fs.writeFileSync(LOCAL_MINISTER_JSON_PATH, JSON.stringify(ministersDB, null, 2), 'utf-8');
+    console.log(`Successfully updated ${LOCAL_MINISTER_JSON_PATH}`);
+  } catch (writeErr) {
+    console.error(`Error writing to ${LOCAL_MINISTER_JSON_PATH}`, writeErr);
+  }
 }
 
 app.get('/', (req, res) => {
@@ -91,19 +115,26 @@ app.get('/api/get_minister/:id', async (req, res) => {
 
 // Api to search for a minister by name
 app.post('/api/search_minister', async (req, res) => {
-  const ministerName = req.query.name;
-  console.log(`Searching for minister with name: ${ministerName}`);
+  const searchTerm = req.query.q; // Changed from name to q
+  console.log(`Searching for minister with term: ${searchTerm}`);
+  if (!searchTerm) {
+    return res.status(400).json({ error: 'Search term "q" is required' });
+  }
   try {
-    // Find in the local JSON data firstname that matches the query
-    const minister = ministersDB.find(minister => minister.name.toLowerCase().includes(ministerName.toLowerCase()));
-    if (!minister) {
-      console.error(`Error: Minister with name ${ministerName} not found`);
-      return res.status(404).json({ error: `Minister with name ${ministerName} not found` });
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    const matchingMinisters = ministersDB.filter(minister => {
+      const nameMatch = minister.name && minister.name.toLowerCase().includes(lowerCaseSearchTerm);
+      const infoMatch = minister.info && minister.info.toLowerCase().includes(lowerCaseSearchTerm);
+      return nameMatch || infoMatch;
+    });
+
+    if (matchingMinisters.length === 0) {
+      console.log(`No ministers found matching term: ${searchTerm}`);
+      return res.status(404).json({ error: `No ministers found matching term: ${searchTerm}` });
     }
-    else {
-      console.log('Minister data fetched successfully:', minister);
-      res.json(minister);
-    }
+    
+    console.log('Ministers data fetched successfully:', matchingMinisters);
+    res.json(matchingMinisters);
   } catch (error) {
     console.error('Error searching for minister:', error);
     res.status(500).json({ error: 'Error searching for minister' });
