@@ -253,10 +253,9 @@ function App() {
     });
 
     // Loop through the data entries and run the api call using the data
-    callApiVariableUpdate(api_data)
+    callApiVariableUpdate(api_data);
+    handleButtonClick('clear_overlays'); 
     activateOverlayByName('lt-minister-info-v1'); 
-    // setValidMinisterInfo('...');
-
   };
 
   const handleMinisterUpdate = (e?: React.FormEvent<HTMLFormElement>) => {
@@ -268,6 +267,7 @@ function App() {
     if (e?.target === undefined) {
       console.log('Resetting minister form fields');
       setMinisterFormFields({ name: '', info: '' });
+      handleButtonClick('clear_overlays'); 
     }else {
       console.log('Updating minister form fields with form input.');
     }
