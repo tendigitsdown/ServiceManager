@@ -23,4 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-*db/ministers.json
+*data/ministers.json
+backend/data/db/ministers.json
